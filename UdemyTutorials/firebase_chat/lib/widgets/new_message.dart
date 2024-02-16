@@ -52,6 +52,8 @@ class _NewMessageState extends State<NewMessage> {
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 4, bottom: 16),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: TextField(

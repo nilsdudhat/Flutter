@@ -12,9 +12,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-
   void setUpPushNotification() async {
-
     final fcm = FirebaseMessaging.instance;
     await fcm.requestPermission();
 
@@ -45,12 +43,14 @@ class _ChatScreenState extends State<ChatScreen> {
               Icons.exit_to_app,
               color: Theme.of(context).colorScheme.primary,
             ),
-          )
+          ),
         ],
       ),
       body: const Column(
         children: [
-          Expanded(child: ChatMessagesNew()),
+          Expanded(
+            child: ChatMessagesNew(),
+          ),
           NewMessage(),
         ],
       ),

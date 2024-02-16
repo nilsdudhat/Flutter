@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "591609557155",
+    "project_id": "chat-demo-for-swazz",
+    "storage_bucket": "chat-demo-for-swazz.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:591609557155:android:78e60cb6038006d07c8f16",
+        "android_client_info": {
+          "package_name": "com.example.chat_demo_for_swazz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDosugn20i-Gq3xb9l1BGVI6lq7sQkGfeI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
