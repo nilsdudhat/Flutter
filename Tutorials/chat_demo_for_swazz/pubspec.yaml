@@ -42,6 +42,7 @@ dependencies:
   get: ^4.6.6
   flutter_screenutil: ^5.9.0
   country_picker: ^2.0.24
+  pinput: ^4.0.0
 
 dev_dependencies:
   flutter_test:

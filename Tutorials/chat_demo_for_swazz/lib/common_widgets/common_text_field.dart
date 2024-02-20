@@ -5,6 +5,8 @@ class CommonTextField extends StatefulWidget {
   const CommonTextField({
     super.key,
     required this.controller,
+    this.onChanged,
+    this.validator,
     this.borderRadius,
     this.borderWidth,
     this.labelWeight,
@@ -19,6 +21,14 @@ class CommonTextField extends StatefulWidget {
   });
 
   final TextEditingController controller;
+
+  /// default: null
+  /// to observe changes on field
+  final Function(String)? onChanged;
+
+  /// default: null
+  /// to validate the field
+  final String? Function(String? value)? validator;
 
   /// default: 45
   final double? borderRadius;
@@ -68,9 +78,11 @@ class _CommonTextFieldState extends State<CommonTextField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      onChanged: widget.onChanged,
       keyboardType: widget.textInputType ?? TextInputType.text,
       textInputAction: widget.textInputAction ?? TextInputAction.next,
       maxLength: widget.maxLength,
+      validator: widget.validator,
       decoration: InputDecoration(
         prefixIcon: widget.prefix,
         floatingLabelBehavior: FloatingLabelBehavior.always,
