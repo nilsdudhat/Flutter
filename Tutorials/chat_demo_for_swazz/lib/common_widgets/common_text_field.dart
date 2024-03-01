@@ -13,6 +13,7 @@ class CommonTextField extends StatefulWidget {
     this.labelText,
     this.hintText,
     this.prefix,
+    this.suffix,
     this.textInputType,
     this.unfocusedColor,
     this.focusedColor,
@@ -46,8 +47,12 @@ class CommonTextField extends StatefulWidget {
   final String? hintText;
 
   /// default: null
-  /// to display widget ahead of the input field
+  /// to display widget at start of the input field
   final Widget? prefix;
+
+  /// default: null
+  /// to display widget at end of the input field
+  final Widget? suffix;
 
   /// default: TextInputType.text
   /// to open up specific type of keyboard as per requirement of the feature - e.g. email, phone, number
@@ -83,8 +88,10 @@ class _CommonTextFieldState extends State<CommonTextField> {
       textInputAction: widget.textInputAction ?? TextInputAction.next,
       maxLength: widget.maxLength,
       validator: widget.validator,
+      autovalidateMode: AutovalidateMode.always,
       decoration: InputDecoration(
         prefixIcon: widget.prefix,
+        suffixIcon: widget.suffix,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(widget.borderRadius ?? 45),

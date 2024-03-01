@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:chat_demo_for_swazz/pages/setup_profile_page.dart';
 import 'package:chat_demo_for_swazz/pages/sign_in_page.dart';
-import 'package:chat_demo_for_swazz/providers/auth_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_demo_for_swazz/providers/firebase_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -25,11 +25,18 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     Timer(
       const Duration(seconds: 2),
-      () {
-        if (ref.read(firebaseAuthProvider).isUserLoggedIn()) {
-          Get.off(const HomePage());
+      () async {
+        if (ref.read(firebaseProvider).isUserLoggedIn()) {
+          if (ref.read(firebaseProvider).isUserLoggedIn() &&
+              !(await ref
+                  .read(firebaseProvider)
+                  .isUserExistInFirestore())) {
+            Get.off(() => const SignInPage());
+          } else {
+            Get.off(() => const HomePage());
+          }
         } else {
-          Get.off(const SignInPage());
+          Get.off(() => const SignInPage());
         }
       },
     );

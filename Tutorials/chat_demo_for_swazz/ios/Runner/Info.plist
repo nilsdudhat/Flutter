@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription </key>
+	<string>Camera Permission required to take Profile Picture</string>
 	<key>CFBundleDisplayName</key>
 	<string>Chat Demo For Swazz</string>
 	<key>CFBundleExecutable</key>
@@ -45,5 +47,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Google Sign-in Section -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
+                <string>com.googleusercontent.apps.591609557155-89ni0abilddvnd84l5f4pmpbumbupumq</string>
+            </array>
+        </dict>
+    </array>
+    <!-- End of the Google Sign-in Section -->
 </dict>
 </plist>

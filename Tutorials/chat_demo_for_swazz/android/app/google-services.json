@@ -12,7 +12,20 @@
           "package_name": "com.example.chat_demo_for_swazz"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "591609557155-o7rsdq9db1s4n3lctcdo71mpo7bqrbu9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chat_demo_for_swazz",
+            "certificate_hash": "160433f9c582d8fc76ed2ff9b795acc5e9e55851"
+          }
+        },
+        {
+          "client_id": "591609557155-lpa398qa72mjb4da4s9mbtpn7m31bf8g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDosugn20i-Gq3xb9l1BGVI6lq7sQkGfeI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "591609557155-an6543ihk42ai98ghivv8qt2usqbtk7d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "591609557155-89ni0abilddvnd84l5f4pmpbumbupumq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatDemoForSwazz"
+              }
+            }
+          ]
         }
       }
     }

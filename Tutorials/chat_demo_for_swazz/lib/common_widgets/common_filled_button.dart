@@ -49,10 +49,12 @@ class _CommonFilledButtonState extends State<CommonFilledButton> {
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(widget.radius ?? 45))),
         ),
-        child: Text(widget.text,
-            style: TextStyle(
-                color: widget.textColor ??
-                    Theme.of(context).colorScheme.onPrimary)),
+        child: Text(
+          widget.text,
+          style: TextStyle(
+              color:
+                  widget.textColor ?? Theme.of(context).colorScheme.onPrimary),
+        ),
       ),
     );
   }

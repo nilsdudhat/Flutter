@@ -45,13 +45,19 @@ class _SwazzHomeState extends ConsumerState<SwazzHome> {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(360, 690),
+      designSize: Size(MediaQuery.of(context).size.width,
+          MediaQuery.of(context).size.height),
       minTextAdapt: true,
       splitScreenMode: true,
       child: GetMaterialApp(
         title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
-        darkTheme: themeData,
+        darkTheme: themeData.copyWith(
+          appBarTheme: AppBarTheme(
+            backgroundColor: themeData.colorScheme.primary,
+            foregroundColor: themeData.colorScheme.onPrimary,
+          ),
+        ),
         themeMode: ThemeMode.dark,
         home: const SplashPage(),
       ),

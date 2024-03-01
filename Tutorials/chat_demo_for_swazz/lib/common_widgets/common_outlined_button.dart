@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
 class CommonOutlinedButton extends StatefulWidget {
-  const CommonOutlinedButton({
+  const CommonOutlinedButton.child({
+    super.key,
+    required this.isFullWidth,
+    required this.onPressed,
+    required this.child,
+    this.borderColor,
+    this.borderWidth,
+    this.splashColor,
+    this.textColor,
+    this.radius,
+    this.text,
+  });
+
+  const CommonOutlinedButton.text({
     super.key,
     required this.isFullWidth,
     required this.onPressed,
@@ -11,10 +24,18 @@ class CommonOutlinedButton extends StatefulWidget {
     this.splashColor,
     this.textColor,
     this.radius,
+    this.child,
   });
 
   final Function() onPressed;
-  final String text;
+
+  /// default: null, if null then child variable will be required
+  /// direct display of text
+  final String? text;
+
+  /// default: null, if null then text variable will be required
+  /// direct display of child
+  final Widget? child;
 
   /// to display full width button or not
   final bool isFullWidth;
@@ -47,18 +68,23 @@ class _CommonOutlinedButtonState extends State<CommonOutlinedButton> {
         onPressed: widget.onPressed,
         style: ButtonStyle(
           side: MaterialStateProperty.all(BorderSide(
-            color: widget.borderColor ?? Theme.of(context).colorScheme.primary,
-            width: widget.borderWidth ?? 1,
-          )),
-          overlayColor: MaterialStateProperty.all(
-              widget.splashColor ?? Theme.of(context).colorScheme.onPrimaryContainer),
+              color:
+                  widget.borderColor ?? Theme.of(context).colorScheme.primary,
+              width: widget.borderWidth ?? 1)),
+          foregroundColor: MaterialStateProperty.all(null),
+          overlayColor: MaterialStateProperty.all(widget.splashColor ??
+              Theme.of(context).colorScheme.onPrimaryContainer),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(widget.radius ?? 45))),
         ),
-        child: Text(widget.text,
-            style: TextStyle(
-                color: widget.textColor ??
-                    Theme.of(context).colorScheme.primary)),
+        child: (widget.text != null)
+            ? Text(
+                widget.text!,
+                style: TextStyle(
+                    color: widget.textColor ??
+                        Theme.of(context).colorScheme.primary),
+              )
+            : widget.child,
       ),
     );
   }
