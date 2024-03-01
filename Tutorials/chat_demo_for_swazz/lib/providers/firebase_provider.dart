@@ -226,7 +226,9 @@ class FirebaseService extends ChangeNotifier {
         "userName": displayName,
         "profileImage": profileImage,
         "userId": user.uid,
-        "createdAt: ": DateTime.now(),
+        "createdOn": DateTime.now(),
+        "emailID": user.email,
+        "phoneNumber": user.phoneNumber,
         "chatters": null
       }).then((value) {
         loadingStatus.call(LoadingStatus.done);
@@ -257,8 +259,36 @@ class FirebaseService extends ChangeNotifier {
         loadingStatus.call(LoadingStatus.errorWhileLoading);
         onError.call(error.toString());
       });
-    } catch(error) {
+    } catch (error) {
       loadingStatus.call(LoadingStatus.errorWhileLoading);
+      onError.call(error.toString());
+    }
+  }
+
+  void updateProfileData({
+    required Map<String, dynamic> params,
+    required Function(LoadingStatus loadingStatus) loadingStatus,
+    required Function(String error) onError,
+    required Function() onSuccess,
+  }) {
+    try {
+      loadingStatus.call(LoadingStatus.loading);
+      params["modifiedOn"] = DateTime.now();
+
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(getUserId())
+          .update(params)
+          .then((value) {
+        loadingStatus.call(LoadingStatus.done);
+        onSuccess.call();
+      }).onError((error, stacktrace) {
+        loadingStatus.call(LoadingStatus.errorWhileLoading);
+        onError.call(error.toString());
+      });
+    } catch (error) {
+      loadingStatus.call(LoadingStatus.errorWhileLoading);
+
       onError.call(error.toString());
     }
   }

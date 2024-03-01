@@ -6,6 +6,7 @@ class CommonTextField extends StatefulWidget {
     super.key,
     required this.controller,
     this.onChanged,
+    this.autoValidateMode,
     this.validator,
     this.borderRadius,
     this.borderWidth,
@@ -22,6 +23,8 @@ class CommonTextField extends StatefulWidget {
   });
 
   final TextEditingController controller;
+
+  final AutovalidateMode? autoValidateMode;
 
   /// default: null
   /// to observe changes on field
@@ -88,7 +91,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
       textInputAction: widget.textInputAction ?? TextInputAction.next,
       maxLength: widget.maxLength,
       validator: widget.validator,
-      autovalidateMode: AutovalidateMode.always,
+      autovalidateMode: widget.autoValidateMode,
       decoration: InputDecoration(
         prefixIcon: widget.prefix,
         suffixIcon: widget.suffix,

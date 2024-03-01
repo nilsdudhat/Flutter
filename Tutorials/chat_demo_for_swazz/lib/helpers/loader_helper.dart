@@ -13,9 +13,24 @@ class LoadingDialog {
       context: context,
       barrierDismissible: false,
       useSafeArea: false,
+      useRootNavigator: true,
       builder: (context) {
-        return const CircularProgressIndicator(
-          color: Colors.white,
+        return PopScope(
+          canPop: false,
+          onPopInvoked: (didPop) {
+            if (didPop) {
+              return;
+            }
+          },
+          child: const SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            ),
+          ),
         );
       },
     );
