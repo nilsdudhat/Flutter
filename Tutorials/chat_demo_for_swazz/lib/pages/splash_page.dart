@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:chat_demo_for_swazz/pages/setup_profile_page.dart';
 import 'package:chat_demo_for_swazz/pages/sign_in_page.dart';
-import 'package:chat_demo_for_swazz/providers/firebase_auth_provider.dart';
+import 'package:chat_demo_for_swazz/providers/firebase_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';

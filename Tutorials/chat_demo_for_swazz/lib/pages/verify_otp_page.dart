@@ -12,7 +12,7 @@ import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
 
 import '../enums/loading_status.dart';
-import '../providers/firebase_auth_provider.dart';
+import '../providers/firebase_provider.dart';
 import 'home_page.dart';
 
 class VerifyOTPPage extends ConsumerStatefulWidget {

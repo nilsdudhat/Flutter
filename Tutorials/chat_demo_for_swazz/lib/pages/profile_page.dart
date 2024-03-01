@@ -1,7 +1,7 @@
 import 'package:chat_demo_for_swazz/common_widgets/common_text_field.dart';
 import 'package:chat_demo_for_swazz/helpers/screen_helper.dart';
 import 'package:chat_demo_for_swazz/pages/verify_otp_page.dart';
-import 'package:chat_demo_for_swazz/providers/firebase_auth_provider.dart';
+import 'package:chat_demo_for_swazz/providers/firebase_provider.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

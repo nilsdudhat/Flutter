@@ -9,7 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../providers/firebase_auth_provider.dart';
+import '../providers/firebase_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
