@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-final firebaseProvider = ChangeNotifierProvider<FirebaseService>((ref) {
-  return FirebaseService();
+final firebaseAuthProvider = ChangeNotifierProvider<FirebaseAuthService>((ref) {
+  return FirebaseAuthService();
 });
 
-class FirebaseService extends ChangeNotifier {
+class FirebaseAuthService extends ChangeNotifier {
   bool isUserLoggedIn() {
     return (FirebaseAuth.instance.currentUser != null);
   }
@@ -52,8 +52,8 @@ class FirebaseService extends ChangeNotifier {
         onVerificationCompleted.call(phoneAuthCredential);
       },
     )
-        .onError(
-      (error, stackTrace) {
+        .catchError(
+      (error) {
         loadingStatus.call(LoadingStatus.errorWhileLoading);
         onError.call(onError.toString());
       },
@@ -91,17 +91,15 @@ class FirebaseService extends ChangeNotifier {
     return credential;
   }
 
-  void signInWithGoogle({
+  void getGoogleAuthCredential({
     required Function(LoadingStatus loadingStatus) loadingStatus,
-    required Function(UserCredential userCredential) onSuccessfulSignIn,
+    required Function(OAuthCredential authCredential) onSuccess,
     required Function(String error) onError,
   }) async {
     loadingStatus.call(LoadingStatus.loading);
 
     try {
       GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      loadingStatus.call(LoadingStatus.done);
 
       GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
@@ -110,19 +108,29 @@ class FirebaseService extends ChangeNotifier {
         idToken: googleAuth?.idToken,
       );
 
-      loadingStatus.call(LoadingStatus.loading);
-
-      FirebaseAuth.instance.signInWithCredential(credential).then((value) {
-        loadingStatus.call(LoadingStatus.done);
-        onSuccessfulSignIn.call(value);
-      }).catchError((error) {
-        loadingStatus.call(LoadingStatus.errorWhileLoading);
-        onError.call(error);
-      });
+      loadingStatus.call(LoadingStatus.done);
+      onSuccess.call(credential);
     } catch (error) {
       loadingStatus.call(LoadingStatus.errorWhileLoading);
       onError.call(error.toString());
     }
+  }
+
+  void signInWithGoogleAuthCredential({
+    required OAuthCredential credential,
+    required Function(LoadingStatus loadingStatus) loadingStatus,
+    required Function(UserCredential userCredential) onSuccessfulSignIn,
+    required Function(String error) onError,
+  }) {
+    loadingStatus.call(LoadingStatus.loading);
+
+    FirebaseAuth.instance.signInWithCredential(credential).then((value) {
+      loadingStatus.call(LoadingStatus.done);
+      onSuccessfulSignIn.call(value);
+    }).catchError((error) {
+      loadingStatus.call(LoadingStatus.errorWhileLoading);
+      onError.call(error);
+    });
   }
 
   String getUserId() {
@@ -146,7 +154,22 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
-  Future<bool> isUserProfileImageAvailable() async {
+  Future<bool> isEmailAlreadyInUse({
+    required String enteredEmailID,
+  }) async {
+    final result = await FirebaseFirestore.instance
+        .collection("users")
+        .where("emailID", isEqualTo: enteredEmailID)
+        .get();
+
+    if (result.docs.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  Future<bool> needToUpdateProfile() async {
     try {
       if (!isUserLoggedIn()) {
         return false;
@@ -163,16 +186,22 @@ class FirebaseService extends ChangeNotifier {
         return false;
       }
       Map<String, dynamic> dataMap = user.data()!;
-      if (dataMap.containsKey("profileImage")) {
-        String? profileImage = dataMap["profileImage"];
-        if (profileImage == null) {
-          return false;
-        } else {
-          return profileImage.isNotEmpty;
-        }
-      } else {
-        return false;
+      String? profileImage =
+          dataMap.containsKey("profileImage") ? dataMap["profileImage"] : null;
+      String? userName =
+          dataMap.containsKey("userName") ? dataMap["userName"] : null;
+      String? description =
+          dataMap.containsKey("description") ? dataMap["description"] : null;
+
+      if (profileImage == null ||
+          profileImage.isEmpty ||
+          (userName == null) ||
+          userName.isEmpty ||
+          (description == null) ||
+          description.isEmpty) {
+        return true;
       }
+      return false;
     } catch (error) {
       log("isUserProfileImageAvailable: Error: $error");
       return false;
@@ -211,6 +240,7 @@ class FirebaseService extends ChangeNotifier {
   void registerUserWithFirestore({
     required String profileImage,
     required String displayName,
+    required String? description,
     required Function(LoadingStatus loadingStatus) loadingStatus,
     required Function(String error) onError,
     required Function() onSuccess,
@@ -229,6 +259,7 @@ class FirebaseService extends ChangeNotifier {
         "createdOn": DateTime.now(),
         "emailID": user.email,
         "phoneNumber": user.phoneNumber,
+        "description": description,
         "chatters": null
       }).then((value) {
         loadingStatus.call(LoadingStatus.done);
@@ -255,7 +286,7 @@ class FirebaseService extends ChangeNotifier {
       getUser().updatePhoneNumber(phoneAuthCredential).then((value) {
         loadingStatus.call(LoadingStatus.done);
         onSuccess.call();
-      }).onError((error, stackTrace) {
+      }).catchError((error) {
         loadingStatus.call(LoadingStatus.errorWhileLoading);
         onError.call(error.toString());
       });
@@ -282,8 +313,33 @@ class FirebaseService extends ChangeNotifier {
           .then((value) {
         loadingStatus.call(LoadingStatus.done);
         onSuccess.call();
-      }).onError((error, stacktrace) {
+      }).catchError((error) {
         loadingStatus.call(LoadingStatus.errorWhileLoading);
+        onError.call(error.toString());
+      });
+    } catch (error) {
+      loadingStatus.call(LoadingStatus.errorWhileLoading);
+
+      onError.call(error.toString());
+    }
+  }
+
+  void getProfileDataFromFirestore({
+    required Function(LoadingStatus loadingStatus) loadingStatus,
+    required Function(String error) onError,
+    required Function(Map<String, dynamic>? userDataMap) onSuccess,
+  }) {
+    try {
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(getUserId())
+          .get()
+          .then((value) {
+        Map<String, dynamic>? map = value.data();
+        onSuccess.call(map);
+      }).catchError((error) {
+        loadingStatus.call(LoadingStatus.errorWhileLoading);
+
         onError.call(error.toString());
       });
     } catch (error) {

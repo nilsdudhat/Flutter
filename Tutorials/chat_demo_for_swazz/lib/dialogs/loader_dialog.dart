@@ -40,6 +40,7 @@ class LoadingDialog {
     if (!isVisible) {
       return;
     }
+    isVisible = false;
 
     Get.back();
   }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:chat_demo_for_swazz/common_widgets/common_filled_button.dart';
 import 'package:chat_demo_for_swazz/common_widgets/common_text_field.dart';
+import 'package:chat_demo_for_swazz/providers/firebase_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,9 +20,11 @@ class SetupProfilePage extends ConsumerStatefulWidget {
 
 class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
   File? _pickedFile;
+  String? photoURL;
   final formKey = GlobalKey<FormState>();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
+  final descriptionController = TextEditingController();
 
   void _pickImage() async {
     final pickedImage = await ImagePicker().pickImage(
@@ -40,6 +43,43 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    final firebaseAuthReadProvider = ref.read(firebaseAuthProvider);
+
+    firebaseAuthReadProvider.getProfileDataFromFirestore(
+      loadingStatus: (loadingStatus) {},
+      onError: (error) {},
+      onSuccess: (userDataMap) {
+        if (userDataMap == null) {
+          return;
+        }
+        String? displayName = userDataMap["userName"];
+        if (displayName != null) {
+          if (displayName.contains(" ")) {
+            final split = displayName.split(" ");
+
+            firstNameController.text = split[0];
+            lastNameController.text = split[1];
+          } else {
+            firstNameController.text = displayName;
+          }
+        }
+        String? description = userDataMap["description"];
+        if (description != null) {
+          descriptionController.text = description;
+        }
+        String? photo = userDataMap["profileImage"];
+        if (photo != null) {
+          photoURL = photo;
+        }
+        setState(() {});
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
@@ -49,6 +89,8 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
         }
         if (_pickedFile == null) {
           Fluttertoast.showToast(msg: "Profile Image is mandatory");
+        } else {
+          formKey.currentState!.validate();
         }
       },
       child: Scaffold(
@@ -65,8 +107,8 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        width: 0.60.sw,
-                        height: 0.60.sw,
+                        width: 0.50.sw,
+                        height: 0.50.sw,
                         child: ClipOval(
                           clipBehavior: Clip.hardEdge,
                           child: InkWell(
@@ -78,7 +120,9 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                               alignment: Alignment.center,
                               children: [
                                 if (_pickedFile != null) ...[
-                                  Image.file(_pickedFile!)
+                                  Image.file(_pickedFile!),
+                                ] else if (photoURL != null) ...[
+                                  Image.network(photoURL!),
                                 ] else ...[
                                   Container(
                                     color: Colors.white.withOpacity(0.25),
@@ -126,7 +170,7 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                             child: CommonTextField(
                               validator: (value) {
                                 if (firstNameController.text.isEmpty) {
-                                  return "Please enter your First Name";
+                                  return "Enter First Name";
                                 } else if (firstNameController.text.length <
                                     3) {
                                   return "Minimum 3 characters required";
@@ -134,7 +178,7 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                                 return null;
                               },
                               controller: firstNameController,
-                              labelText: "First Name",
+                              labelText: "First Name *",
                               textInputAction: TextInputAction.next,
                               textInputType: TextInputType.name,
                               borderRadius: 12,
@@ -153,14 +197,14 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                             child: CommonTextField(
                               validator: (value) {
                                 if (lastNameController.text.isEmpty) {
-                                  return "Please enter your Last Name";
+                                  return "Enter Last Name";
                                 } else if (lastNameController.text.length < 3) {
                                   return "Minimum 3 characters required";
                                 }
                                 return null;
                               },
                               controller: lastNameController,
-                              labelText: "Last Name",
+                              labelText: "Last Name *",
                               textInputAction: TextInputAction.done,
                               textInputType: TextInputType.name,
                               maxLength: 20,
@@ -174,7 +218,21 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                         ],
                       ),
                       SizedBox(
-                        height: 0.1.sh,
+                        height: 0.05.sh,
+                      ),
+                      CommonTextField(
+                        controller: descriptionController,
+                        labelText: "Description",
+                        textInputAction: TextInputAction.done,
+                        textInputType: TextInputType.name,
+                        borderRadius: 12,
+                        unfocusedColor: Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.25),
+                      ),
+                      SizedBox(
+                        height: 0.08.sh,
                       ),
                       CommonFilledButton(
                         isFullWidth: false,
@@ -188,7 +246,8 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                               Get.back(result: {
                                 "profile_image": _pickedFile,
                                 "display_name":
-                                    "${firstNameController.text} ${lastNameController.text}"
+                                    "${firstNameController.text} ${lastNameController.text}",
+                                "description": descriptionController.text
                               });
                             }
                           }

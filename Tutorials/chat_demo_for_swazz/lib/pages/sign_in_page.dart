@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:chat_demo_for_swazz/common_widgets/common_filled_button.dart';
 import 'package:chat_demo_for_swazz/common_widgets/common_outlined_button.dart';
 import 'package:chat_demo_for_swazz/common_widgets/common_text_field.dart';
-import 'package:chat_demo_for_swazz/helpers/loader_helper.dart';
 import 'package:chat_demo_for_swazz/pages/home_page.dart';
 import 'package:chat_demo_for_swazz/pages/setup_profile_page.dart';
 import 'package:chat_demo_for_swazz/pages/verify_otp_page.dart';
@@ -16,8 +15,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
+import '../dialogs/loader_dialog.dart';
 import '../enums/loading_status.dart';
-import '../providers/firebase_provider.dart';
+import '../providers/firebase_auth_provider.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
   const SignInPage({super.key});
@@ -50,7 +50,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     );
   }
 
-  void uploadImage() async {
+  void setupProfile() async {
     final profileData = await Get.to(() => const SetupProfilePage());
 
     if (profileData != null) {
@@ -58,8 +58,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
       File file = profileMap["profile_image"];
       String displayName = profileMap["display_name"];
+      String? description = profileMap["description"];
 
-      ref.read(firebaseProvider).uploadProfileImage(
+      ref.read(firebaseAuthProvider).uploadProfileImage(
             file: file,
             loadingStatus: (loadingStatus) {
               setState(() {
@@ -77,6 +78,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
               registerUserWithFirestore(
                 profileImageUrl: imageUrl,
                 displayName: displayName,
+                description: description,
               );
             },
           );
@@ -86,10 +88,12 @@ class _SignInPageState extends ConsumerState<SignInPage> {
   void registerUserWithFirestore({
     required String profileImageUrl,
     required String displayName,
+    required String? description,
   }) {
-    ref.read(firebaseProvider).registerUserWithFirestore(
+    ref.read(firebaseAuthProvider).registerUserWithFirestore(
           profileImage: profileImageUrl,
           displayName: displayName,
+          description: description,
           loadingStatus: (LoadingStatus loadingStatus) {
             setState(() {
               if (loadingStatus == LoadingStatus.loading) {
@@ -108,17 +112,67 @@ class _SignInPageState extends ConsumerState<SignInPage> {
         );
   }
 
+  void signInWithGoogle() {
+    ref.read(firebaseAuthProvider).getGoogleAuthCredential(
+      loadingStatus: (LoadingStatus loadingStatus) {
+        setState(() {
+          if (loadingStatus == LoadingStatus.loading) {
+            LoadingDialog.showLoader(context: context);
+          } else {
+            LoadingDialog.hideLoader();
+          }
+        });
+      },
+      onError: (String error) {
+        log("google---- error: $error");
+        Fluttertoast.showToast(msg: "Error: $error");
+      },
+      onSuccess: (OAuthCredential authCredential) {
+        signInWithGoogleAuthCredential(authCredential: authCredential);
+      },
+    );
+  }
+
+  void signInWithGoogleAuthCredential({
+    required OAuthCredential authCredential,
+  }) {
+    ref.read(firebaseAuthProvider).signInWithGoogleAuthCredential(
+          credential: authCredential,
+          loadingStatus: (LoadingStatus loadingStatus) {
+            if (loadingStatus == LoadingStatus.loading) {
+              LoadingDialog.showLoader(context: context);
+            } else {
+              LoadingDialog.hideLoader();
+            }
+          },
+          onSuccessfulSignIn: (UserCredential userCredential) {
+            log("google---- success: ${userCredential.toString()}");
+            log("user--- ${userCredential.user?.displayName}");
+            log("user--- ${userCredential.user?.phoneNumber}");
+            log("user--- ${userCredential.user?.email}");
+            log("user--- ${userCredential.user?.photoURL}");
+            log("user--- ${DateTime.now().microsecondsSinceEpoch.toString()}");
+
+            setupProfile();
+          },
+          onError: (String error) {
+            log("google---- error: $error");
+            Fluttertoast.showToast(msg: "Error: $error");
+          },
+        );
+  }
+
+  void uploadUserProfileImageIfNotAvailable() async {
+    if (await ref.read(firebaseAuthProvider).needToUpdateProfile()) {
+      setupProfile();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     uploadUserProfileImageIfNotAvailable();
-  }
-
-  void uploadUserProfileImageIfNotAvailable() async {
-    if (await ref.read(firebaseProvider).isUserProfileImageAvailable()) {
-      uploadImage();
-    }
   }
 
   @override
@@ -184,8 +238,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                               SizedBox(width: 12.r),
                               Text(countryCode,
                                   style: TextStyle(
-                                      fontSize: 14.sp,
-                                      color: Colors.white)),
+                                      fontSize: 14.sp, color: Colors.white)),
                               SizedBox(width: 8.r),
                             ],
                           ),
@@ -198,8 +251,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                         isFullWidth: true,
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
-                            FocusScope.of(context)
-                                .requestFocus(FocusNode());
+                            FocusScope.of(context).requestFocus(FocusNode());
 
                             await Get.to(
                               () => VerifyOTPPage(
@@ -209,12 +261,19 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                               ),
                             );
 
+                            if (context.mounted) {
+                              LoadingDialog.showLoader(context: context);
+                            }
                             if (await ref
-                                .read(firebaseProvider)
-                                .isUserProfileImageAvailable()) {
+                                .read(firebaseAuthProvider)
+                                .needToUpdateProfile()) {
+                              LoadingDialog.hideLoader();
+
                               Get.offAll(() => const HomePage());
                             } else {
-                              uploadImage();
+                              LoadingDialog.hideLoader();
+
+                              setupProfile();
                             }
                           }
                         },
@@ -227,32 +286,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       CommonOutlinedButton.child(
                         isFullWidth: true,
                         onPressed: () async {
-                          ref.read(firebaseProvider).signInWithGoogle(
-                            loadingStatus: (LoadingStatus loadingStatus) {
-                              setState(() {
-                                if (loadingStatus == LoadingStatus.loading) {
-                                  LoadingDialog.showLoader(context: context);
-                                } else {
-                                  LoadingDialog.hideLoader();
-                                }
-                              });
-                            },
-                            onSuccessfulSignIn:
-                                (UserCredential userCredential) {
-                              log("google---- success: ${userCredential.toString()}");
-                              log("user--- ${userCredential.user?.displayName}");
-                              log("user--- ${userCredential.user?.phoneNumber}");
-                              log("user--- ${userCredential.user?.email}");
-                              log("user--- ${userCredential.user?.photoURL}");
-                              log("user--- ${DateTime.now().microsecondsSinceEpoch.toString()}");
-
-                              uploadImage();
-                            },
-                            onError: (String error) {
-                              log("google---- error: $error");
-                              Fluttertoast.showToast(msg: "Error: $error");
-                            },
-                          );
+                          signInWithGoogle();
                         },
                         borderColor: Colors.white,
                         splashColor: Theme.of(context).colorScheme.primary,

@@ -11,14 +11,17 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
 
+import '../dialogs/loader_dialog.dart';
 import '../enums/loading_status.dart';
-import '../helpers/loader_helper.dart';
-import '../providers/firebase_provider.dart';
+import '../providers/firebase_auth_provider.dart';
 import 'home_page.dart';
 
 class VerifyOTPPage extends ConsumerStatefulWidget {
-  const VerifyOTPPage(
-      {super.key, required this.phoneNumber, required this.isRegister});
+  const VerifyOTPPage({
+    super.key,
+    required this.phoneNumber,
+    required this.isRegister,
+  });
 
   final String phoneNumber;
   final bool isRegister;
@@ -62,15 +65,8 @@ class _VerifyOTPPageState extends ConsumerState<VerifyOTPPage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    sendOTP();
-  }
-
   void sendOTP() {
-    ref.read(firebaseProvider).sendOTP(
+    ref.read(firebaseAuthProvider).sendOTP(
           context: context,
           loadingStatus: (loadingStatus) {
             log("loading_status----- $loadingStatus");
@@ -103,13 +99,13 @@ class _VerifyOTPPageState extends ConsumerState<VerifyOTPPage> {
 
   void verifyOTP() {
     PhoneAuthCredential phoneAuthCredential =
-        ref.read(firebaseProvider).getAuthCredentialFromOTP(
+        ref.read(firebaseAuthProvider).getAuthCredentialFromOTP(
               verificationId: verificationId,
               otp: otp,
             );
 
     if (widget.isRegister) {
-      ref.read(firebaseProvider).signInWithPhoneCredential(
+      ref.read(firebaseAuthProvider).signInWithPhoneCredential(
             phoneAuthCredential: phoneAuthCredential,
             loadingStatus: (loadingStatus) {
               setState(() {
@@ -132,7 +128,7 @@ class _VerifyOTPPageState extends ConsumerState<VerifyOTPPage> {
             },
           );
     } else {
-      ref.read(firebaseProvider).updatePhoneNumberWithCredential(
+      ref.read(firebaseAuthProvider).updatePhoneNumberWithCredential(
             phoneAuthCredential: phoneAuthCredential,
             loadingStatus: (loadingStatus) {
               if (loadingStatus == LoadingStatus.loading) {
@@ -153,6 +149,15 @@ class _VerifyOTPPageState extends ConsumerState<VerifyOTPPage> {
             },
           );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      sendOTP();
+    });
   }
 
   @override
@@ -239,8 +244,7 @@ class _VerifyOTPPageState extends ConsumerState<VerifyOTPPage> {
                       defaultPinTheme: defaultPinTheme,
                       focusedPinTheme: focusedPinTheme,
                       submittedPinTheme: submittedPinTheme,
-                      pinputAutovalidateMode:
-                          PinputAutovalidateMode.onSubmit,
+                      pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
                       showCursor: true,
                       onCompleted: (pin) {
                         otp = pin;
@@ -289,8 +293,7 @@ class _VerifyOTPPageState extends ConsumerState<VerifyOTPPage> {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
-                                color:
-                                    Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             )
                           ]

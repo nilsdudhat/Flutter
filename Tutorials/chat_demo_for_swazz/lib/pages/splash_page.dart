@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:chat_demo_for_swazz/pages/setup_profile_page.dart';
 import 'package:chat_demo_for_swazz/pages/sign_in_page.dart';
-import 'package:chat_demo_for_swazz/providers/firebase_provider.dart';
+import 'package:chat_demo_for_swazz/providers/firebase_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -26,11 +25,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     Timer(
       const Duration(seconds: 2),
       () async {
-        if (ref.read(firebaseProvider).isUserLoggedIn()) {
-          if (ref.read(firebaseProvider).isUserLoggedIn() &&
-              !(await ref
-                  .read(firebaseProvider)
-                  .isUserExistInFirestore())) {
+        if (ref.read(firebaseAuthProvider).isUserLoggedIn()) {
+          if (ref.read(firebaseAuthProvider).isUserLoggedIn() &&
+              !(await ref.read(firebaseAuthProvider).isUserExistInFirestore())) {
             Get.off(() => const SignInPage());
           } else {
             Get.off(() => const HomePage());
