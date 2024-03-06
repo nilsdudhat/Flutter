@@ -129,7 +129,7 @@ class FirebaseAuthService extends ChangeNotifier {
       onSuccessfulSignIn.call(value);
     }).catchError((error) {
       loadingStatus.call(LoadingStatus.errorWhileLoading);
-      onError.call(error);
+      onError.call(error.toString());
     });
   }
 
@@ -141,10 +141,41 @@ class FirebaseAuthService extends ChangeNotifier {
     return FirebaseAuth.instance.currentUser!;
   }
 
+  Future<bool> isNewUser({
+    required String? emailID,
+    required String? phoneNumber,
+  }) async {
+    QuerySnapshot<Map<String, dynamic>>? result;
+
+    if ((emailID != null) && (phoneNumber != null)) {
+      result = await FirebaseFirestore.instance
+          .collection("users")
+          .where("emailID", isEqualTo: emailID)
+          .where("phoneNumber", isEqualTo: phoneNumber)
+          .get();
+    } else if (emailID != null) {
+      result = await FirebaseFirestore.instance
+          .collection("users")
+          .where("emailID", isEqualTo: emailID)
+          .get();
+    } else if (phoneNumber != null) {
+      result = await FirebaseFirestore.instance
+          .collection("users")
+          .where("phoneNumber", isEqualTo: phoneNumber)
+          .get();
+    }
+
+    if ((result != null) && result.docs.isNotEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   Future<bool> isUserExistInFirestore() async {
     final result = await FirebaseFirestore.instance
         .collection("users")
-        .where("userId", isEqualTo: getUserId())
+        .where("userID", isEqualTo: getUserId())
         .get();
 
     if (result.docs.isEmpty) {
@@ -175,7 +206,7 @@ class FirebaseAuthService extends ChangeNotifier {
         return false;
       }
       if (!(await isUserExistInFirestore())) {
-        return false;
+        return true;
       }
       final user = await FirebaseFirestore.instance
           .collection("users")
@@ -238,9 +269,7 @@ class FirebaseAuthService extends ChangeNotifier {
   }
 
   void registerUserWithFirestore({
-    required String profileImage,
-    required String displayName,
-    required String? description,
+    required Map<String, dynamic> profileMap,
     required Function(LoadingStatus loadingStatus) loadingStatus,
     required Function(String error) onError,
     required Function() onSuccess,
@@ -250,18 +279,43 @@ class FirebaseAuthService extends ChangeNotifier {
 
       loadingStatus.call(LoadingStatus.loading);
 
-      await getUser().updateDisplayName(displayName);
+      if (profileMap.containsKey("userName")) {
+        String userName = profileMap["userName"];
+        await getUser().updateDisplayName(userName);
+      }
 
-      FirebaseFirestore.instance.collection("users").doc(user.uid).set({
-        "userName": displayName,
-        "profileImage": profileImage,
-        "userId": user.uid,
-        "createdOn": DateTime.now(),
-        "emailID": user.email,
-        "phoneNumber": user.phoneNumber,
-        "description": description,
-        "chatters": null
-      }).then((value) {
+      String? emailID;
+      String? phoneNumber;
+      if (profileMap.containsKey("emailID")) {
+        emailID = profileMap["emailID"];
+      }
+      if (profileMap.containsKey("phoneNumber")) {
+        phoneNumber = profileMap["phoneNumber"];
+      }
+
+      Future<void> query;
+      if (await isNewUser(
+        emailID: emailID,
+        phoneNumber: phoneNumber,
+      )) {
+        profileMap["userID"] = user.uid;
+        profileMap["createdOn"] = DateTime.now();
+        profileMap["emailID"] = user.email;
+        profileMap["phoneNumber"] = user.phoneNumber;
+        profileMap["chatters"] = null;
+        query = FirebaseFirestore.instance
+            .collection("users")
+            .doc(user.uid)
+            .set(profileMap);
+      } else {
+        profileMap["modifiedOn"] = DateTime.now();
+        query = FirebaseFirestore.instance
+            .collection("users")
+            .doc(user.uid)
+            .update(profileMap);
+      }
+
+      query.then((value) {
         loadingStatus.call(LoadingStatus.done);
         onSuccess.call();
       }).catchError((error) {

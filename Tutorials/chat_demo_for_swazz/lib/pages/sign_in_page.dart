@@ -56,44 +56,42 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     if (profileData != null) {
       Map<String, dynamic> profileMap = profileData as Map<String, dynamic>;
 
-      File file = profileMap["profile_image"];
-      String displayName = profileMap["display_name"];
-      String? description = profileMap["description"];
-
-      ref.read(firebaseAuthProvider).uploadProfileImage(
-            file: file,
-            loadingStatus: (loadingStatus) {
-              setState(() {
-                if (loadingStatus == LoadingStatus.loading) {
-                  LoadingDialog.showLoader(context: context);
-                } else {
-                  LoadingDialog.hideLoader();
-                }
-              });
-            },
-            onError: (error) {
-              Fluttertoast.showToast(msg: "Error: ${error.toString()}");
-            },
-            onSuccess: (String imageUrl) {
-              registerUserWithFirestore(
-                profileImageUrl: imageUrl,
-                displayName: displayName,
-                description: description,
-              );
-            },
-          );
+      if (profileMap.containsKey("profileImage")) {
+        ref.read(firebaseAuthProvider).uploadProfileImage(
+          file: profileMap["profileImage"] as File,
+          loadingStatus: (loadingStatus) {
+            setState(() {
+              if (loadingStatus == LoadingStatus.loading) {
+                LoadingDialog.showLoader(context: context);
+              } else {
+                LoadingDialog.hideLoader();
+              }
+            });
+          },
+          onError: (error) {
+            Fluttertoast.showToast(msg: "Error: ${error.toString()}");
+            log("--error-- $error");
+          },
+          onSuccess: (String imageUrl) {
+            profileMap["profileImage"] = imageUrl;
+            registerUserWithFirestore(
+              profileMap: profileMap,
+            );
+          },
+        );
+      } else {
+        registerUserWithFirestore(
+          profileMap: profileMap,
+        );
+      }
     }
   }
 
   void registerUserWithFirestore({
-    required String profileImageUrl,
-    required String displayName,
-    required String? description,
+    required Map<String, dynamic> profileMap,
   }) {
     ref.read(firebaseAuthProvider).registerUserWithFirestore(
-          profileImage: profileImageUrl,
-          displayName: displayName,
-          description: description,
+          profileMap: profileMap,
           loadingStatus: (LoadingStatus loadingStatus) {
             setState(() {
               if (loadingStatus == LoadingStatus.loading) {
@@ -105,6 +103,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
           },
           onError: (String error) {
             Fluttertoast.showToast(msg: "Error: ${error.toString()}");
+            log("--error-- $error");
           },
           onSuccess: () {
             Get.offAll(() => const HomePage());

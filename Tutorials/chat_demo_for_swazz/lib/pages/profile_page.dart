@@ -30,11 +30,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   final phoneController = TextEditingController();
   final descriptionController = TextEditingController();
 
-  String photoURL = "";
-  String description = "";
-  String email = "";
-  String userName = "";
-  String phoneNumber = "";
+  String? photoURL = "";
+  String? description = "";
+  String? email = "";
+  String? userName = "";
+  String? phoneNumber = "";
 
   String countryCode = "+91";
 
@@ -79,7 +79,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         Map<String, dynamic> profileData = {};
 
         if (userDataMap.containsKey("emailID")) {
-          if (email.isEmpty) {
+          if (email!.isEmpty) {
             email = userDataMap["emailID"];
           } else {
             if (email != userDataMap["emailID"]) {
@@ -87,12 +87,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             }
           }
         } else {
-          if (email.isNotEmpty) {
+          if (email!.isNotEmpty) {
             profileData["emailID"] = email;
           }
         }
         if (userDataMap.containsKey("phoneNumber")) {
-          if (phoneNumber.isEmpty) {
+          if (phoneNumber!.isEmpty) {
             phoneNumber = userDataMap["phoneNumber"];
           } else {
             if (phoneNumber != userDataMap["phoneNumber"]) {
@@ -100,12 +100,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             }
           }
         } else {
-          if (phoneNumber.isNotEmpty) {
+          if (phoneNumber!.isNotEmpty) {
             profileData["phoneNumber"] = phoneNumber;
           }
         }
         if (userDataMap.containsKey("userName")) {
-          if (userName.isEmpty) {
+          if (userName!.isEmpty) {
             userName = userDataMap["userName"];
           } else {
             if (userName != userDataMap["userName"]) {
@@ -113,12 +113,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             }
           }
         } else {
-          if (userName.isNotEmpty) {
+          if (userName!.isNotEmpty) {
             profileData["userName"] = userName;
           }
         }
         if (userDataMap.containsKey("photoURL")) {
-          if (photoURL.isEmpty) {
+          if (photoURL!.isEmpty) {
             photoURL = userDataMap["photoURL"];
           } else {
             if (photoURL != userDataMap["photoURL"]) {
@@ -126,7 +126,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             }
           }
         } else {
-          if (photoURL.isNotEmpty) {
+          if (photoURL!.isNotEmpty) {
             profileData["photoURL"] = photoURL;
           }
         }
@@ -266,6 +266,35 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
+  void signOut() {
+    ConfirmationDialog.showConfirmationDialog(
+      context: context,
+      title: "Sign Out",
+      message: "Are you sure, you want to Sign Out?",
+      cancelText: "Cancel",
+      okayText: "Sign Out",
+      cancelOnOutside: true,
+      highlight: Highlight.cancel,
+      onCancelPressed: () {
+        ConfirmationDialog.hideConfirmationDialog();
+      },
+      onOkayPressed: () {
+        if (ref.read(firebaseAuthProvider).isUserLoggedIn()) {
+          ref.read(firebaseAuthProvider).signOut().then((value) {
+            log("auth----- sign out successful");
+            log("auth----- current user ${FirebaseAuth.instance.currentUser}");
+
+            Get.offAll(() => const SignInPage());
+          }).catchError((onError) {
+            log("auth----- sign out error: ${onError.toString()}");
+          });
+        } else {
+          log("auth----- sign in required to sign out");
+        }
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -305,32 +334,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             actions: [
               IconButton(
                 onPressed: () {
-                  ConfirmationDialog.showConfirmationDialog(
-                    context: context,
-                    title: "Sign Out",
-                    message: "Are you sure, you want to Sign Out?",
-                    cancelText: "Cancel",
-                    okayText: "Sign Out",
-                    cancelOnOutside: true,
-                    highlight: Highlight.cancel,
-                    onCancelPressed: () {
-                      ConfirmationDialog.hideConfirmationDialog();
-                    },
-                    onOkayPressed: () {
-                      if (ref.read(firebaseAuthProvider).isUserLoggedIn()) {
-                        ref.read(firebaseAuthProvider).signOut().then((value) {
-                          log("auth----- sign out successful");
-                          log("auth----- current user ${FirebaseAuth.instance.currentUser}");
-
-                          Get.offAll(() => const SignInPage());
-                        }).catchError((onError) {
-                          log("auth----- sign out error: ${onError.toString()}");
-                        });
-                      } else {
-                        log("auth----- sign in required to sign out");
-                      }
-                    },
-                  );
+                  signOut();
                 },
                 icon: const Icon(Icons.logout),
               ),
@@ -351,6 +355,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       child: CommonCircularImage(
                         size: 0.40.sw,
                         photoURL: photoURL,
+                        file: null,
                       ),
                     ),
                     SizedBox(
@@ -364,14 +369,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       ),
                     ),
                     Text(
-                      userName,
+                      userName!,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
-                    if (email.isNotEmpty) ...[
+                    if ((email != null) && email!.isNotEmpty) ...[
                       SizedBox(
                         height: 0.02.sh,
                       ),
@@ -383,7 +388,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                       Text(
-                        email,
+                        email!,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -391,7 +396,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                     ],
-                    if (phoneNumber.isNotEmpty) ...[
+                    if ((phoneNumber != null) && phoneNumber!.isNotEmpty) ...[
                       SizedBox(
                         height: 0.02.sh,
                       ),
@@ -403,7 +408,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                       Text(
-                        phoneNumber,
+                        phoneNumber!,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -411,7 +416,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                     ],
-                    if (description.isNotEmpty) ...[
+                    if ((description != null) && description!.isNotEmpty) ...[
                       SizedBox(
                         height: 0.02.sh,
                       ),
@@ -423,7 +428,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                       Text(
-                        description,
+                        description!,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -431,7 +436,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                     ],
-                    if (email.isEmpty) ...[
+                    if ((email == null) && email!.isEmpty) ...[
                       SizedBox(
                         height: 0.04.sh,
                       ),
@@ -472,7 +477,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                     ],
-                    if (phoneNumber.isEmpty) ...[
+                    if ((phoneNumber == null) || phoneNumber!.isEmpty) ...[
                       SizedBox(
                         height: 0.04.sh,
                       ),
@@ -536,7 +541,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         ),
                       ),
                     ],
-                    if (description.isEmpty) ...[
+                    if ((description == null) && description!.isEmpty) ...[
                       SizedBox(
                         height: 0.04.sh,
                       ),

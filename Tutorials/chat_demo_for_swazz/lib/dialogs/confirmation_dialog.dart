@@ -1,4 +1,7 @@
+import 'package:chat_demo_for_swazz/common_widgets/common_filled_button.dart';
+import 'package:chat_demo_for_swazz/common_widgets/common_outlined_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 enum Highlight {
@@ -75,10 +78,80 @@ class ConfirmationDialog {
       ],
     );
 
+    Widget widget = Container(
+      padding: EdgeInsets.all(16.r),
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 24.sp,
+            ),
+          ),
+          SizedBox(
+            height: 0.02.sh,
+          ),
+          Text(message),
+          SizedBox(
+            height: 0.04.sh,
+          ),
+          if (highlight == Highlight.cancel) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: CommonFilledButton(
+                    isFullWidth: true,
+                    onPressed: onCancelPressed,
+                    text: cancelText,
+                  ),
+                ),
+                SizedBox(
+                  width: 0.05.sw,
+                ),
+                Expanded(
+                  child: CommonOutlinedButton.text(
+                    isFullWidth: true,
+                    onPressed: onOkayPressed,
+                    text: okayText,
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: CommonOutlinedButton.text(
+                    isFullWidth: true,
+                    onPressed: onCancelPressed,
+                    text: cancelText,
+                  ),
+                ),
+                SizedBox(
+                  width: 0.05.sw,
+                ),
+                Expanded(
+                  child: CommonFilledButton(
+                    isFullWidth: true,
+                    onPressed: onOkayPressed,
+                    text: okayText,
+                  ),
+                ),
+              ],
+            ),
+          ]
+        ],
+      ),
+    );
+
     // show the dialog
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: cancelOnOutside,
       builder: (BuildContext context) {
         return PopScope(
           canPop: cancelOnOutside,
@@ -87,17 +160,17 @@ class ConfirmationDialog {
               return;
             }
           },
-          child: alert,
+          child: widget,
         );
       },
     );
   }
 
   static void hideConfirmationDialog() {
-    if (!isVisible) {
+    /*if (!isVisible) {
       return;
     }
-    isVisible = false;
+    isVisible = false;*/
 
     Get.back();
   }

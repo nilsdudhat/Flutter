@@ -1,4 +1,4 @@
-import 'package:chat_demo_for_swazz/pages/profile_page.dart';
+import 'package:chat_demo_for_swazz/pages/new_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

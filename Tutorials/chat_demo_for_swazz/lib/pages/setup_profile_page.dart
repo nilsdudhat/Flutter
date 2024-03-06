@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_demo_for_swazz/common_widgets/common_circular_image.dart';
 import 'package:chat_demo_for_swazz/common_widgets/common_filled_button.dart';
 import 'package:chat_demo_for_swazz/common_widgets/common_text_field.dart';
 import 'package:chat_demo_for_swazz/providers/firebase_auth_provider.dart';
@@ -10,6 +11,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../dialogs/edit_profile_image_dialog.dart';
 
 class SetupProfilePage extends ConsumerStatefulWidget {
   const SetupProfilePage({super.key});
@@ -27,19 +30,50 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
   final descriptionController = TextEditingController();
 
   void _pickImage() async {
-    final pickedImage = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 75,
-      maxWidth: double.infinity,
+    final selectionResult = await ImagePickerSelectionDialog.showDialog(
+      context: context,
     );
 
-    if (pickedImage == null) {
-      return;
-    }
+    if (selectionResult != null) {
+      File? pickedFile;
 
-    setState(() {
-      _pickedFile = File(pickedImage.path);
-    });
+      if (selectionResult == ImagePickerType.camera) {
+        final pickedImage = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+          imageQuality: 75,
+          maxWidth: double.infinity,
+        );
+
+        if (pickedImage == null) {
+          return;
+        }
+
+        pickedFile = File(pickedImage.path);
+      }
+
+      if (selectionResult == ImagePickerType.gallery) {
+        final pickedImage = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 75,
+          maxWidth: double.infinity,
+        );
+
+        if (pickedImage == null) {
+          return;
+        }
+
+        pickedFile = File(pickedImage.path);
+      }
+
+      if (pickedFile == null) {
+        return;
+      }
+
+      setState(() {
+        photoURL = null;
+        _pickedFile = File(pickedFile!.path);
+      });
+    }
   }
 
   @override
@@ -106,56 +140,31 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 0.50.sw,
-                        height: 0.50.sw,
-                        child: ClipOval(
-                          clipBehavior: Clip.hardEdge,
-                          child: InkWell(
-                            onTap: () {
-                              _pickImage();
-                            },
-                            customBorder: const CircleBorder(),
-                            child: Stack(
+                      CommonCircularImage(
+                        onImageClicked: () {
+                          _pickImage();
+                        },
+                        size: 0.50.sw,
+                        photoURL: photoURL,
+                        file: _pickedFile,
+                        iconData: FontAwesomeIcons.user,
+                        editWidget: Positioned(
+                          bottom: 0,
+                          right: 0,
+                          left: 0,
+                          child: Container(
+                            color: Colors.black.withOpacity(0.50),
+                            padding: EdgeInsets.only(top: 12.r, bottom: 8.r),
+                            child: Align(
                               alignment: Alignment.center,
-                              children: [
-                                if (_pickedFile != null) ...[
-                                  Image.file(_pickedFile!),
-                                ] else if (photoURL != null) ...[
-                                  Image.network(photoURL!),
-                                ] else ...[
-                                  Container(
-                                    color: Colors.white.withOpacity(0.25),
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    child: Icon(
-                                      FontAwesomeIcons.user,
-                                      size: 0.25.sw,
-                                    ),
-                                  ),
-                                ],
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  left: 0,
-                                  child: Container(
-                                    color: Colors.black.withOpacity(0.50),
-                                    padding:
-                                        EdgeInsets.only(top: 12.r, bottom: 8.r),
-                                    child: Align(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        "EDIT",
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                              child: Text(
+                                "EDIT",
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -237,18 +246,22 @@ class _SetupProfilePageState extends ConsumerState<SetupProfilePage> {
                       CommonFilledButton(
                         isFullWidth: false,
                         onPressed: () {
-                          if (_pickedFile == null) {
+                          if ((photoURL == null) && (_pickedFile == null)) {
                             Fluttertoast.showToast(
                                 msg: "please click an image");
                           } else {
                             if ((formKey.currentState != null) &&
                                 formKey.currentState!.validate()) {
-                              Get.back(result: {
-                                "profile_image": _pickedFile,
-                                "display_name":
-                                    "${firstNameController.text} ${lastNameController.text}",
-                                "description": descriptionController.text
-                              });
+                              Map<String, dynamic> params = {};
+                              params["userName"] =
+                                  "${firstNameController.text} ${lastNameController.text}";
+                              params["description"] =
+                                  descriptionController.text;
+                              if (_pickedFile != null) {
+                                params["profileImage"] = _pickedFile;
+                              }
+
+                              Get.back(result: params);
                             }
                           }
                         },
