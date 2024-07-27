@@ -275,7 +275,7 @@ class FirebaseAuthService extends ChangeNotifier {
     required Function() onSuccess,
   }) async {
     try {
-      User user = FirebaseAuth.instance.currentUser!;
+      User user = getUser();
 
       loadingStatus.call(LoadingStatus.loading);
 

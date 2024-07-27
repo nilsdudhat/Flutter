@@ -111,11 +111,12 @@ class ConfirmProfileImageDialog {
                       height: 0.02.sh,
                     ),
                     CommonFilledButton(
-                        isFullWidth: true,
-                        onPressed: () {
-                          Get.back(result: "Upload");
-                        },
-                        text: "Confirm Upload")
+                      isFullWidth: true,
+                      onPressed: () {
+                        Get.back(result: "Upload");
+                      },
+                      text: "Confirm Upload",
+                    ),
                   ],
                 ),
               ),
