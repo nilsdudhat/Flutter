@@ -286,9 +286,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 borderRadius: BorderRadius.circular(widget.borderRadius ?? 45),
               ),
               hintText: widget.hintText,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 20,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             ),
             style: TextStyle(
               fontSize: textSize,

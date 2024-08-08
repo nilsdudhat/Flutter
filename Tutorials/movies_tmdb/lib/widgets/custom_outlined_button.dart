@@ -81,8 +81,8 @@ class _CustomOutlinedButtonState extends State<CustomOutlinedButton> {
           foregroundColor: MaterialStateProperty.all(null),
           backgroundColor: MaterialStateProperty.all(
               widget.backgroundColor ?? ColorConstants.whiteColor),
-          overlayColor: MaterialStateProperty.all(widget.splashColor ??
-              Theme.of(context).colorScheme.background),
+          overlayColor: MaterialStateProperty.all(
+              widget.splashColor ?? Theme.of(context).colorScheme.background),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(widget.radius ?? 45))),
         ),

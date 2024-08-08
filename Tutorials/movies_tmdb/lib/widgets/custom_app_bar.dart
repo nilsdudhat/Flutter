@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:responsive_sizer/responsive_sizer.dart';
 
 import 'custom_text.dart';
 
@@ -31,7 +30,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         right: false,
         left: false,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
