@@ -48,7 +48,7 @@ class CustomLinearProgressIndicator extends StatelessWidget {
                 text: text!,
                 textColor: ColorConstants.whiteColor,
                 textAlignment: TextAlign.center,
-                customFontSize: CustomFontSize.small,
+                customFontSize: CustomFontSize.normal,
                 customFontWeight: CustomFontWeight.normal,
               ),
             ),

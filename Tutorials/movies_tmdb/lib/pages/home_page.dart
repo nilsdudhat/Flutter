@@ -74,7 +74,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         title: CustomText(
           text: StringConstants.homePageTitle,
           textColor: ColorConstants.blackColor,
-          customFontSize: CustomFontSize.largeExtra,
+          customFontSize: CustomFontSize.large,
           customFontWeight: CustomFontWeight.semiBold,
         ),
         actions: [
@@ -195,7 +195,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         maxLines: 1,
                                         customFontWeight:
                                             CustomFontWeight.semiBold,
-                                        customFontSize: CustomFontSize.large,
+                                        customFontSize: CustomFontSize.medium,
                                       ),
                                     ),
                                     Container(
@@ -242,39 +242,38 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 backgroundColor:
                                     ColorConstants.blackColor.withOpacity(0.10),
                                 borderWidth: 0,
+                                containerPadding: EdgeInsets.zero,
                                 containerMargin: const EdgeInsets.only(
                                     top: 16, left: 16, right: 16),
                                 containerChild: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     SizedBox.square(
-                                      dimension: 12.w,
-                                      child: ClipOval(
-                                        child: Hero(
-                                          tag: "poster${movie.id}",
-                                          child: Image.network(
-                                            "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                            fit: BoxFit.cover,
-                                            frameBuilder: (context, child, frame,
-                                                wasSynchronouslyLoaded) {
-                                              if ((frame != null)) {
-                                                return AnimatedOpacity(
-                                                  opacity: 1,
-                                                  duration:
-                                                      const Duration(seconds: 1),
-                                                  curve: Curves.easeOut,
-                                                  child: child,
-                                                );
-                                              } else {
-                                                return Center(
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                          color: ColorConstants
-                                                              .blackColor),
-                                                );
-                                              }
-                                            },
-                                          ),
+                                      dimension: 16.w,
+                                      child: Hero(
+                                        tag: "poster${movie.id}",
+                                        child: Image.network(
+                                          "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                          fit: BoxFit.cover,
+                                          frameBuilder: (context, child, frame,
+                                              wasSynchronouslyLoaded) {
+                                            if ((frame != null)) {
+                                              return AnimatedOpacity(
+                                                opacity: 1,
+                                                duration:
+                                                    const Duration(seconds: 1),
+                                                curve: Curves.easeOut,
+                                                child: child,
+                                              );
+                                            } else {
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                        color: ColorConstants
+                                                            .blackColor),
+                                              );
+                                            }
+                                          },
                                         ),
                                       ),
                                     ),
@@ -294,7 +293,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             customFontWeight:
                                                 CustomFontWeight.semiBold,
                                             customFontSize:
-                                                CustomFontSize.large,
+                                                CustomFontSize.medium,
                                           ),
                                           CustomText(
                                             text: movie.voteAverage!.toString(),

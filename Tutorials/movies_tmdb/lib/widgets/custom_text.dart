@@ -4,18 +4,20 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 enum CustomFontWeight {
   light,
   normal,
+  medium,
   semiBold,
   bold,
 }
 
 enum CustomFontSize {
   smallDoubleExtra,
-  smallTripleExtra,
   smallExtra,
   small,
   normal,
+  medium,
   large,
   largeExtra,
+  largeDoubleExtra,
 }
 
 class CustomText extends StatelessWidget {
@@ -50,6 +52,8 @@ class CustomText extends StatelessWidget {
     } else {
       if (customFontWeight == CustomFontWeight.light) {
         fontWeight = FontWeight.w200;
+      } else if (customFontWeight == CustomFontWeight.normal) {
+        fontWeight = FontWeight.w400;
       } else if (customFontWeight == CustomFontWeight.semiBold) {
         fontWeight = FontWeight.w600;
       } else if (customFontWeight == CustomFontWeight.bold) {
@@ -63,18 +67,22 @@ class CustomText extends StatelessWidget {
     if (customFontSize == null) {
       fontSize = 16.sp;
     } else {
-      if (customFontSize == CustomFontSize.smallTripleExtra) {
-        fontSize = 8.sp;
-      } else if (customFontSize == CustomFontSize.smallDoubleExtra) {
+      if (customFontSize == CustomFontSize.smallDoubleExtra) {
         fontSize = 10.sp;
       } else if (customFontSize == CustomFontSize.smallExtra) {
         fontSize = 12.sp;
       } else if (customFontSize == CustomFontSize.small) {
         fontSize = 14.sp;
-      } else if (customFontSize == CustomFontSize.large) {
+      } else if (customFontSize == CustomFontSize.normal) {
+        fontSize = 16.sp;
+      } else if (customFontSize == CustomFontSize.medium) {
         fontSize = 18.sp;
-      } else if (customFontSize == CustomFontSize.largeExtra) {
+      } else if (customFontSize == CustomFontSize.large) {
         fontSize = 20.sp;
+      } else if (customFontSize == CustomFontSize.largeExtra) {
+        fontSize = 22.sp;
+      } else if (customFontSize == CustomFontSize.largeDoubleExtra) {
+        fontSize = 24.sp;
       } else {
         fontSize = 16.sp;
       }

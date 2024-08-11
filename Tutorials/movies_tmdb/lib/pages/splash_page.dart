@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:movies_tmdb/constants/color_constants.dart';
-import 'package:movies_tmdb/constants/image_constants.dart';
 import 'package:movies_tmdb/pages/home_page.dart';
 import 'package:movies_tmdb/widgets/square_logo.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';

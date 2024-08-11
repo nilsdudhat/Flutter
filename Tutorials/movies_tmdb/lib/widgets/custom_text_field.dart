@@ -25,7 +25,7 @@ class CustomTextField extends StatefulWidget {
     this.borderRadius,
     this.borderWidth,
     this.labelWeight = CustomFontWeight.semiBold,
-    this.labelSize = CustomFontSize.small,
+    this.labelSize = CustomFontSize.normal,
     this.labelText,
     this.labelTextColor,
     this.hintText,
@@ -58,7 +58,7 @@ class CustomTextField extends StatefulWidget {
     this.borderRadius,
     this.borderWidth,
     this.labelWeight = CustomFontWeight.normal,
-    this.labelSize = CustomFontSize.small,
+    this.labelSize = CustomFontSize.normal,
     this.labelText,
     this.labelTextColor,
     this.hintText,
@@ -196,9 +196,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
     if (widget.textSize == null) {
       textSize = 16.sp;
     } else {
-      if (widget.textSize == CustomFontSize.smallExtra) {
+      if (widget.textSize == CustomFontSize.small) {
         textSize = 12.sp;
-      } else if (widget.textSize == CustomFontSize.small) {
+      } else if (widget.textSize == CustomFontSize.normal) {
         textSize = 14.sp;
       } else if (widget.textSize == CustomFontSize.large) {
         textSize = 18.sp;

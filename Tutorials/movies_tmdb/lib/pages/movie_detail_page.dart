@@ -69,7 +69,7 @@ class _MovieDetailPageState extends ConsumerState<MovieDetailPage> {
           text: widget.movie.title!,
           textOverflow: TextOverflow.ellipsis,
           textColor: ColorConstants.blackColor,
-          customFontSize: CustomFontSize.largeExtra,
+          customFontSize: CustomFontSize.large,
           customFontWeight: CustomFontWeight.semiBold,
         ),
       ),
@@ -251,9 +251,10 @@ class _MovieDetailPageState extends ConsumerState<MovieDetailPage> {
                                         textColor: ColorConstants.blackColor,
                                         customFontWeight:
                                             CustomFontWeight.semiBold,
+                                        customFontSize: CustomFontSize.medium,
                                       );
                                     }),
-                                    const SizedBox(height: 16)
+                                    const SizedBox(height: 8)
                                   ],
                                   if (value.spokenLanguages != null) ...[
                                     Builder(builder: (context) {
@@ -270,9 +271,10 @@ class _MovieDetailPageState extends ConsumerState<MovieDetailPage> {
                                         textColor: ColorConstants.blackColor,
                                         customFontWeight:
                                             CustomFontWeight.semiBold,
+                                        customFontSize: CustomFontSize.medium,
                                       );
                                     }),
-                                    const SizedBox(height: 16)
+                                    const SizedBox(height: 8)
                                   ],
                                   if (value.overview != null)
                                     CustomText(
