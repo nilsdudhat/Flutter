@@ -25,7 +25,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   ValueNotifier<List<Movie>> moviesListNotifier = ValueNotifier([]);
   ValueNotifier<bool> isGridNotifier = ValueNotifier(true);
-  ValueNotifier<bool> isLoadingNotifier = ValueNotifier(true);
+  ValueNotifier<bool> isPageLoadingNotifier = ValueNotifier(false);
 
   int totalPages = 0;
   int lastLoadedPage = 0;
@@ -41,6 +41,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void getMovies({required int pageNumber}) {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => isPageLoadingNotifier.value = true);
+
     ref
         .read(homePageProvider)
         .getPopularMoviesData(
@@ -50,7 +53,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           },
         )
         .then((value) {
-      isLoadingNotifier.value = false;
+      isPageLoadingNotifier.value = false;
 
       if (value == null || value.results == null) {
         return;
@@ -106,215 +109,254 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
       ),
       body: SizedBox.expand(
-        child: ValueListenableBuilder(
-          valueListenable: moviesListNotifier,
-          builder: (context, value, child) {
-            log("--notifier-- ${moviesListNotifier.value.length}");
+        child: Column(
+          children: [
+            Expanded(
+              child: ValueListenableBuilder(
+                valueListenable: moviesListNotifier,
+                builder: (context, value, child) {
+                  log("--notifier-- ${moviesListNotifier.value.length}");
 
-            return ValueListenableBuilder(
-                valueListenable: isGridNotifier,
-                builder: (context, isGrid, child) {
-                  return isGrid
-                      ? GridView.builder(
-                          itemCount: value.length,
-                          padding: const EdgeInsets.only(bottom: 16),
-                          clipBehavior: Clip.antiAlias,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.75,
-                          ),
-                          itemBuilder: (context, index) {
-                            if ((index == (value.length - 1)) &&
-                                lastLoadedPage < totalPages) {
-                              getMovies(pageNumber: lastLoadedPage + 1);
-                            }
-
-                            final movie = value[index];
-                            log("--notifier-- ${movie.toJson()}");
-
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return MovieDetailPage(movie: movie);
-                                  },
-                                ));
-                              },
-                              radius: 12,
-                              child: CustomContainer(
-                                width: double.infinity,
-                                backgroundColor:
-                                    ColorConstants.blackColor.withOpacity(0.10),
-                                containerMargin: EdgeInsets.only(
-                                  top: 16,
-                                  right: ((index % 2) == 0) ? 8 : 16,
-                                  left: ((index % 2) != 0) ? 8 : 16,
+                  return ValueListenableBuilder(
+                      valueListenable: isGridNotifier,
+                      builder: (context, isGrid, child) {
+                        return isGrid
+                            ? GridView.builder(
+                                itemCount: value.length,
+                                shrinkWrap: true,
+                                padding: const EdgeInsets.only(bottom: 16),
+                                clipBehavior: Clip.antiAlias,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.75,
                                 ),
-                                containerPadding: EdgeInsets.zero,
-                                borderWidth: 0,
-                                containerChild: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(
-                                      child: Hero(
-                                        tag: "poster${movie.id}",
-                                        child: Image.network(
-                                          "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                          fit: BoxFit.cover,
-                                          frameBuilder: (context, child, frame,
-                                              wasSynchronouslyLoaded) {
-                                            if ((frame != null)) {
-                                              return AnimatedOpacity(
-                                                opacity: 1,
-                                                duration:
-                                                    const Duration(seconds: 1),
-                                                curve: Curves.easeOut,
-                                                child: child,
-                                              );
-                                            } else {
-                                              return Center(
-                                                child: CircularProgressIndicator(
-                                                    color: ColorConstants
-                                                        .blackColor),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.only(top: 4),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: CustomText(
-                                        text: movie.title!,
-                                        textOverflow: TextOverflow.ellipsis,
-                                        textColor: ColorConstants.blackColor,
-                                        maxLines: 1,
-                                        customFontWeight:
-                                            CustomFontWeight.semiBold,
-                                        customFontSize: CustomFontSize.medium,
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.only(bottom: 4),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: CustomText(
-                                        text: movie.voteAverage!.toString(),
-                                        textColor: ColorConstants.blackColor,
-                                        customFontWeight: CustomFontWeight.normal,
-                                        customFontSize: CustomFontSize.normal,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                      : ListView.builder(
-                          itemCount: value.length,
-                          scrollDirection: Axis.vertical,
-                          padding: const EdgeInsets.only(bottom: 16),
-                          clipBehavior: Clip.antiAlias,
-                          itemBuilder: (context, index) {
-                            if ((index == (value.length - 1)) &&
-                                lastLoadedPage < totalPages) {
-                              getMovies(pageNumber: lastLoadedPage + 1);
-                            }
+                                itemBuilder: (context, index) {
+                                  if ((index == (value.length - 1)) &&
+                                      lastLoadedPage < totalPages) {
+                                    getMovies(pageNumber: lastLoadedPage + 1);
+                                  }
 
-                            final movie = value[index];
-                            log("--notifier-- ${movie.toJson()}");
+                                  final movie = value[index];
+                                  log("--notifier-- ${movie.toJson()}");
 
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return MovieDetailPage(movie: movie);
-                                  },
-                                ));
-                              },
-                              radius: 12,
-                              child: CustomContainer(
-                                backgroundColor:
-                                    ColorConstants.blackColor.withOpacity(0.10),
-                                borderWidth: 0,
-                                containerPadding: EdgeInsets.zero,
-                                containerMargin: const EdgeInsets.only(
-                                    top: 16, left: 16, right: 16),
-                                containerChild: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    SizedBox.square(
-                                      dimension: 16.w,
-                                      child: Hero(
-                                        tag: "poster${movie.id}",
-                                        child: Image.network(
-                                          "https://image.tmdb.org/t/p/w500${movie.posterPath}",
-                                          fit: BoxFit.cover,
-                                          frameBuilder: (context, child, frame,
-                                              wasSynchronouslyLoaded) {
-                                            if ((frame != null)) {
-                                              return AnimatedOpacity(
-                                                opacity: 1,
-                                                duration:
-                                                    const Duration(seconds: 1),
-                                                curve: Curves.easeOut,
-                                                child: child,
-                                              );
-                                            } else {
-                                              return Center(
-                                                child:
-                                                    CircularProgressIndicator(
-                                                        color: ColorConstants
-                                                            .blackColor),
-                                              );
-                                            }
-                                          },
-                                        ),
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(context, MaterialPageRoute(
+                                        builder: (context) {
+                                          return MovieDetailPage(movie: movie);
+                                        },
+                                      ));
+                                    },
+                                    radius: 12,
+                                    child: CustomContainer(
+                                      width: double.infinity,
+                                      backgroundColor: ColorConstants.blackColor
+                                          .withOpacity(0.10),
+                                      containerMargin: EdgeInsets.only(
+                                        top: 16,
+                                        right: ((index % 2) == 0) ? 8 : 16,
+                                        left: ((index % 2) != 0) ? 8 : 16,
                                       ),
-                                    ),
-                                    const SizedBox(
-                                      width: 12,
-                                    ),
-                                    Expanded(
-                                      child: Column(
+                                      containerPadding: EdgeInsets.zero,
+                                      borderWidth: 0,
+                                      containerChild: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.stretch,
                                         children: [
-                                          CustomText(
-                                            text: movie.title!,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            textColor:
-                                                ColorConstants.blackColor,
-                                            customFontWeight:
-                                                CustomFontWeight.semiBold,
-                                            customFontSize:
-                                                CustomFontSize.medium,
+                                          Expanded(
+                                            child: Hero(
+                                              tag: "poster${movie.id}",
+                                              child: Image.network(
+                                                "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                                fit: BoxFit.cover,
+                                                frameBuilder: (context,
+                                                    child,
+                                                    frame,
+                                                    wasSynchronouslyLoaded) {
+                                                  if ((frame != null)) {
+                                                    return AnimatedOpacity(
+                                                      opacity: 1,
+                                                      duration: const Duration(
+                                                          seconds: 1),
+                                                      curve: Curves.easeOut,
+                                                      child: child,
+                                                    );
+                                                  } else {
+                                                    return Center(
+                                                      child: CircularProgressIndicator(
+                                                          color: ColorConstants
+                                                              .blackColor),
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                            ),
                                           ),
-                                          CustomText(
-                                            text: movie.voteAverage!.toString(),
-                                            textColor:
-                                                ColorConstants.blackColor,
-                                            customFontWeight:
-                                                CustomFontWeight.normal,
-                                            customFontSize:
-                                                CustomFontSize.normal,
+                                          Container(
+                                            margin:
+                                                const EdgeInsets.only(top: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: CustomText(
+                                              text: movie.title!,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              textColor:
+                                                  ColorConstants.blackColor,
+                                              maxLines: 1,
+                                              customFontWeight:
+                                                  CustomFontWeight.semiBold,
+                                              customFontSize:
+                                                  CustomFontSize.medium,
+                                            ),
+                                          ),
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                bottom: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: CustomText(
+                                              text:
+                                                  movie.voteAverage!.toString(),
+                                              textColor:
+                                                  ColorConstants.blackColor,
+                                              customFontWeight:
+                                                  CustomFontWeight.normal,
+                                              customFontSize:
+                                                  CustomFontSize.normal,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                });
-          },
+                                  );
+                                },
+                              )
+                            : ListView.builder(
+                                itemCount: value.length,
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                padding: const EdgeInsets.only(bottom: 16),
+                                clipBehavior: Clip.antiAlias,
+                                itemBuilder: (context, index) {
+                                  if ((index == (value.length - 1)) &&
+                                      lastLoadedPage < totalPages) {
+                                    getMovies(pageNumber: lastLoadedPage + 1);
+                                  }
+
+                                  final movie = value[index];
+                                  log("--notifier-- ${movie.toJson()}");
+
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(context, MaterialPageRoute(
+                                        builder: (context) {
+                                          return MovieDetailPage(movie: movie);
+                                        },
+                                      ));
+                                    },
+                                    radius: 12,
+                                    child: CustomContainer(
+                                      backgroundColor: ColorConstants.blackColor
+                                          .withOpacity(0.10),
+                                      borderWidth: 0,
+                                      containerPadding: EdgeInsets.zero,
+                                      containerMargin: const EdgeInsets.only(
+                                          top: 16, left: 16, right: 16),
+                                      containerChild: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          SizedBox.square(
+                                            dimension: 16.w,
+                                            child: Hero(
+                                              tag: "poster${movie.id}",
+                                              child: Image.network(
+                                                "https://image.tmdb.org/t/p/w500${movie.posterPath}",
+                                                fit: BoxFit.cover,
+                                                frameBuilder: (context,
+                                                    child,
+                                                    frame,
+                                                    wasSynchronouslyLoaded) {
+                                                  if ((frame != null)) {
+                                                    return AnimatedOpacity(
+                                                      opacity: 1,
+                                                      duration: const Duration(
+                                                          seconds: 1),
+                                                      curve: Curves.easeOut,
+                                                      child: child,
+                                                    );
+                                                  } else {
+                                                    return Center(
+                                                      child: CircularProgressIndicator(
+                                                          color: ColorConstants
+                                                              .blackColor),
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 12,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                CustomText(
+                                                  text: movie.title!,
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  textColor:
+                                                      ColorConstants.blackColor,
+                                                  customFontWeight:
+                                                      CustomFontWeight.semiBold,
+                                                  customFontSize:
+                                                      CustomFontSize.medium,
+                                                ),
+                                                CustomText(
+                                                  text: movie.voteAverage!
+                                                      .toString(),
+                                                  textColor:
+                                                      ColorConstants.blackColor,
+                                                  customFontWeight:
+                                                      CustomFontWeight.normal,
+                                                  customFontSize:
+                                                      CustomFontSize.normal,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                      });
+                },
+              ),
+            ),
+            ValueListenableBuilder(
+                valueListenable: isPageLoadingNotifier,
+                builder: (context, isPageLoading, child) {
+                  return isPageLoading
+                      ? CustomContainer(
+                          width: double.infinity,
+                          backgroundColor: Colors.transparent,
+                          borderWidth: 0,
+                          containerChild: const Center(
+                            child: CustomText(
+                              text: "Loading Page...",
+                            ),
+                          ),
+                        )
+                      : const SizedBox();
+                }),
+          ],
         ),
       ),
     );
